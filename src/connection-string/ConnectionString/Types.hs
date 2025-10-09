@@ -21,24 +21,6 @@ import Test.QuickCheck qualified as QuickCheck
 -- scalar values (user, password, dbname), while lists (hosts) are concatenated
 -- and maps (params) are unioned (with right-hand side taking precedence for
 -- duplicate keys).
---
--- == Examples
---
--- In URL format:
---
--- > postgresql://
--- > postgresql://localhost
--- > postgresql://localhost:5433
--- > postgresql://localhost/mydb
--- > postgresql://user@localhost
--- > postgresql://user:secret@localhost
--- > postgresql://other@localhost/otherdb?connect_timeout=10&application_name=myapp
--- > postgresql://host1:123,host2:456/somedb?target_session_attrs=any&application_name=myapp
---
--- In keyword\/value format:
---
--- > host=localhost port=5432 dbname=mydb connect_timeout=10
--- > host=host1,host2 port=123,456 dbname=mydb user=user password=secret
 data ConnectionString
   = ConnectionString
       -- | Username for authentication.
