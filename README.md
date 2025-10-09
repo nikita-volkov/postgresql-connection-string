@@ -22,7 +22,7 @@ This library provides a type-safe way to work with PostgreSQL connection strings
 ### Parsing Connection Strings
 
 ```haskell
-import ConnectionString
+import PostgresqlConnectionString
 
 -- Parse a URI format connection string
 case parseText "postgresql://user:password@localhost:5432/mydb?application_name=myapp" of
@@ -36,7 +36,7 @@ case parseText "postgresql://user:password@localhost:5432/mydb?application_name=
 ### Constructing Connection Strings
 
 ```haskell
-import ConnectionString
+import PostgresqlConnectionString
 
 -- Build a connection string using combinators
 let connStr = mconcat

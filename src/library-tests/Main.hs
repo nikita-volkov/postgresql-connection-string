@@ -1,9 +1,9 @@
 module Main where
 
-import ConnectionString qualified
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as Text
 import Platform.Prelude
+import PostgresqlConnectionString qualified as ConnectionString
 import Test.Hspec
 import Test.QuickCheck
 import Test.QuickCheck.Classes qualified as Laws

@@ -42,7 +42,7 @@
 -- "host=localhost port=5432 user=user password=password dbname=mydb"
 --
 -- Note that these examples use the 'IsString' instance for brevity.
-module ConnectionString
+module PostgresqlConnectionString
   ( -- * Data Types
     ConnectionString,
 
@@ -74,12 +74,12 @@ module ConnectionString
   )
 where
 
-import ConnectionString.Parsers qualified as Parsers
-import ConnectionString.Types
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as Text
 import PercentEncoding qualified
 import Platform.Prelude
+import PostgresqlConnectionString.Parsers qualified as Parsers
+import PostgresqlConnectionString.Types
 import Text.Megaparsec qualified as Megaparsec
 import TextBuilder qualified
 

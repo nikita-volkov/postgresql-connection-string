@@ -1,4 +1,4 @@
-module ConnectionString.Types.Gens where
+module PostgresqlConnectionString.Types.Gens where
 
 import Data.Map.Strict qualified as Map
 import Platform.Prelude

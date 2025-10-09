@@ -1,14 +1,14 @@
 -- |
--- Module: ConnectionString.Types
+-- Module: PostgresqlConnectionString.Types
 -- Description: Core data types for PostgreSQL connection strings
 --
 -- This module defines the internal representation of PostgreSQL connection strings.
 -- Users typically don't need to import this module directly; use "ConnectionString" instead.
-module ConnectionString.Types where
+module PostgresqlConnectionString.Types where
 
-import ConnectionString.Types.Gens qualified as Gens
 import Data.Map.Strict qualified as Map
 import Platform.Prelude
+import PostgresqlConnectionString.Types.Gens qualified as Gens
 import Test.QuickCheck qualified as QuickCheck
 
 -- | A PostgreSQL connection string.

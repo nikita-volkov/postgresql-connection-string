@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -Wno-unused-do-bind #-}
 
-module ConnectionString.Parsers where
+module PostgresqlConnectionString.Parsers where
 
-import ConnectionString.Types
 import Data.CharSet qualified as CharSet
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as Text
 import PercentEncoding qualified
 import Platform.Prelude hiding (many, some, try)
+import PostgresqlConnectionString.Types
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer
