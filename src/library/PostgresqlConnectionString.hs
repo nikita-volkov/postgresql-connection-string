@@ -25,7 +25,7 @@
 --
 -- Build connection strings using the 'Semigroup' instance and constructor functions:
 --
--- >>> let connStr = mconcat [user "myuser", password "secret", hostAndPort "localhost" (Just 5432), dbname "mydb"]
+-- >>> let connStr = mconcat [user "myuser", password "secret", hostAndPort "localhost" 5432, dbname "mydb"]
 -- >>> toUrl connStr :: Text
 -- "postgresql://myuser:secret@localhost:5432/mydb"
 --
@@ -101,10 +101,10 @@ instance Show ConnectionString where
 --
 -- Examples:
 --
--- >>> toHosts (hostAndPort "localhost" (Just 5432))
+-- >>> toHosts (hostAndPort "localhost" 5432)
 -- [("localhost", Just 5432)]
 --
--- >>> toHosts (mconcat [hostAndPort "host1" Nothing, hostAndPort "host2" (Just 5433)])
+-- >>> toHosts (mconcat [host "host1", hostAndPort "host2" 5433])
 -- [("host1", Nothing), ("host2", Just 5433)]
 toHosts :: ConnectionString -> [(Text, Maybe Word16)]
 toHosts (ConnectionString _ _ hostspec _ _) =
@@ -180,13 +180,13 @@ toParams (ConnectionString _ _ _ _ paramspec) = paramspec
 --
 -- Examples:
 --
--- >>> toUrl (mconcat [user "myuser", hostAndPort "localhost" (Just 5432), dbname "mydb"])
+-- >>> toUrl (mconcat [user "myuser", hostAndPort "localhost" 5432, dbname "mydb"])
 -- "postgresql://myuser@localhost:5432/mydb"
 --
--- >>> toUrl (mconcat [user "user", password "secret", hostAndPort "localhost" Nothing])
+-- >>> toUrl (mconcat [user "user", password "secret", host "localhost"])
 -- "postgresql://user:secret@localhost"
 --
--- >>> toUrl (mconcat [hostAndPort "host1" (Just 5432), hostAndPort "host2" (Just 5433), dbname "mydb"])
+-- >>> toUrl (mconcat [hostAndPort "host1" 5432, hostAndPort "host2" 5433, dbname "mydb"])
 -- "postgresql://host1:5432,host2:5433/mydb"
 toUrl :: ConnectionString -> Text
 toUrl = TextBuilder.toText . renderConnectionString
@@ -251,7 +251,7 @@ toUrl = TextBuilder.toText . renderConnectionString
 --
 -- Examples:
 --
--- >>> toKeyValueString (mconcat [hostAndPort "localhost" (Just 5432), user "postgres"])
+-- >>> toKeyValueString (mconcat [hostAndPort "localhost" 5432, user "postgres"])
 -- "host=localhost port=5432 user=postgres"
 --
 -- >>> toKeyValueString (password "secret pass")
@@ -408,13 +408,13 @@ host hostname =
 --
 -- Examples:
 --
--- >>> toUrl (hostAndPort "localhost" Nothing)
+-- >>> toUrl (host "localhost")
 -- "postgresql://localhost"
 --
--- >>> toUrl (hostAndPort "localhost" (Just 5432))
+-- >>> toUrl (hostAndPort "localhost" 5432)
 -- "postgresql://localhost:5432"
 --
--- >>> toUrl (mconcat [hostAndPort "host1" (Just 5432), hostAndPort "host2" (Just 5433)])
+-- >>> toUrl (mconcat [hostAndPort "host1" 5432, hostAndPort "host2" 5433])
 -- "postgresql://host1:5432,host2:5433"
 hostAndPort :: Text -> Word16 -> ConnectionString
 hostAndPort host port =
@@ -432,7 +432,7 @@ hostAndPort host port =
 -- >>> toUrl (user "myuser")
 -- "postgresql://myuser@"
 --
--- >>> toUrl (mconcat [user "myuser", hostAndPort "localhost" Nothing])
+-- >>> toUrl (mconcat [user "myuser", host "localhost"])
 -- "postgresql://myuser@localhost"
 user :: Text -> ConnectionString
 user username =
@@ -452,7 +452,7 @@ user username =
 -- >>> toUrl (mconcat [user "myuser", password "secret"])
 -- "postgresql://myuser:secret@"
 --
--- >>> toUrl (mconcat [user "myuser", password "secret", hostAndPort "localhost" Nothing])
+-- >>> toUrl (mconcat [user "myuser", password "secret", host "localhost"])
 -- "postgresql://myuser:secret@localhost"
 password :: Text -> ConnectionString
 password pwd =
@@ -470,7 +470,7 @@ password pwd =
 -- >>> toUrl (dbname "mydb")
 -- "postgresql:///mydb"
 --
--- >>> toUrl (mconcat [hostAndPort "localhost" Nothing, dbname "mydb"])
+-- >>> toUrl (mconcat [host "localhost", dbname "mydb"])
 -- "postgresql://localhost/mydb"
 dbname :: Text -> ConnectionString
 dbname db =
@@ -499,7 +499,7 @@ dbname db =
 -- >>> toUrl (param "application_name" "myapp")
 -- "postgresql://?application_name=myapp"
 --
--- >>> toUrl (mconcat [hostAndPort "localhost" Nothing, param "connect_timeout" "10"])
+-- >>> toUrl (mconcat [host "localhost", param "connect_timeout" "10"])
 -- "postgresql://localhost?connect_timeout=10"
 --
 -- >>> toUrl (mconcat [param "application_name" "myapp", param "connect_timeout" "10"])
