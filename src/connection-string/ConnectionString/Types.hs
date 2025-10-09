@@ -61,16 +61,15 @@ data Host
 --
 -- When combining, the following rules apply:
 --
--- * For scalar values (user, password, dbname): left-hand side takes precedence if present, otherwise right-hand side
--- * For hosts: concatenated in order
--- * For params: right-hand side takes precedence for duplicate keys
+-- * For hosts: concatenated in order.
+-- * For scalar values and params: right-hand side takes precedence for duplicate keys, which gives you override behaviour.
 instance Semigroup ConnectionString where
   ConnectionString user1 password1 hosts1 dbname1 params1 <> ConnectionString user2 password2 hosts2 dbname2 params2 =
     ConnectionString
-      (user1 <|> user2)
-      (password1 <|> password2)
+      (user2 <|> user1)
+      (password2 <|> password1)
       (hosts1 <> hosts2)
-      (dbname1 <|> dbname2)
+      (dbname2 <|> dbname1)
       (Map.union params2 params1)
 
 instance Monoid ConnectionString where
