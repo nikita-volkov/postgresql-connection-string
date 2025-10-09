@@ -48,7 +48,7 @@ module PostgresqlConnectionString
 
     -- * Parsing
     parse,
-    megaparsec,
+    megaparsecOf,
 
     -- * Rendering
     toUrl,
@@ -371,18 +371,18 @@ interceptParam key (ConnectionString user password hostspec dbname paramspec) =
 -- Left "parse error message"
 parse :: Text -> Either Text ConnectionString
 parse input =
-  Megaparsec.parse megaparsec "" input
+  Megaparsec.parse megaparsecOf "" input
     & first (fromString . Megaparsec.errorBundlePretty)
 
--- | Get the Megaparsec parser for connection strings.
+-- | Get the Megaparsec parser of connection strings.
 --
 -- This allows you to use the connection string parser as part of a larger
 -- Megaparsec parser combinator setup.
 --
 -- The parser accepts both URI format (@postgresql:\/\/@ or @postgres:\/\/@)
 -- and keyword\/value format connection strings.
-megaparsec :: Megaparsec.Parsec Void Text ConnectionString
-megaparsec = Parsers.getConnectionString
+megaparsecOf :: Megaparsec.Parsec Void Text ConnectionString
+megaparsecOf = Parsers.getConnectionString
 
 -- * Constructors
 
