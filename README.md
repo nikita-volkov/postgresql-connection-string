@@ -1,6 +1,7 @@
 # postgresql-connection-string
 
 [![Hackage](https://img.shields.io/hackage/v/postgresql-connection-string.svg)](https://hackage.haskell.org/package/postgresql-connection-string)
+[![Continuous Haddock](https://img.shields.io/badge/haddock-master-blue)](https://nikita-volkov.github.io/postgresql-connection-string/)
 
 A Haskell library for parsing and constructing PostgreSQL connection strings.
 
@@ -95,16 +96,6 @@ case interceptParam "application_name" connStr of
     useDefault
 ```
 
-## API Documentation
-
-The main module exports:
-
-- **Parsing**: `parseText`, `parserOf`
-- **Constructors**: `hostAndPort`, `user`, `password`, `dbname`, `param`
-- **Accessors**: `toHosts`, `toUser`, `toPassword`, `toDbname`, `toParams`
-- **Rendering**: `toUrl`, `toKeyValueString`
-- **Transformations**: `interceptParam`
-
 ## Installation
 
 Add to your `package.yaml` or `.cabal` file:
@@ -137,4 +128,3 @@ MIT License - see LICENSE file for details.
 ## Contributing
 
 Contributions are welcome! Please feel free to submit pull requests or open issues on GitHub.
--------------------------
