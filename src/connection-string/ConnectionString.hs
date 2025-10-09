@@ -1,10 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 -- |
--- Module: ConnectionString
--- Description: Parser and builder for PostgreSQL connection strings
+-- Structured model of PostgreSQL connection string, with a DSL for construction, access, parsing and rendering.
 --
--- This module provides utilities for parsing and constructing PostgreSQL connection strings.
 -- It supports both the URI format (@postgresql:\/\/@ and @postgres:\/\/@) and the keyword\/value format
 -- as specified in the PostgreSQL documentation:
 -- <https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING>
@@ -13,37 +11,48 @@
 --
 -- == Parsing Connection Strings
 --
--- Parse a connection string from 'Text':
+-- Parse a connection string from 'Text', validate it and access its components:
 --
--- >>> parseText "postgresql://user:password@localhost:5432/mydb"
--- Right (ConnectionString ...)
+-- >>> toDbname <$> parse "postgresql://user:password@localhost:5432/mydb"
+-- Right (Just "mydb")
+--
+-- Or use its 'IsString' instance for convenience (ignoring parse errors):
+--
+-- >>> toDbname "postgresql://user:password@localhost:5432/mydb"
+-- Just "mydb"
 --
 -- == Constructing Connection Strings
 --
 -- Build connection strings using the 'Semigroup' instance and constructor functions:
 --
 -- >>> let connStr = mconcat [user "myuser", password "secret", hostAndPort "localhost" (Just 5432), dbname "mydb"]
--- >>> toUrl connStr
+-- >>> toUrl connStr :: Text
 -- "postgresql://myuser:secret@localhost:5432/mydb"
 --
 -- == Converting Between Formats
 --
 -- Convert to URI format:
 --
--- >>> toUrl connStr
+-- >>> toUrl "host=localhost port=5432 user=user password=password dbname=mydb"
 -- "postgresql://user:password@localhost:5432/mydb"
 --
 -- Convert to keyword\/value format (for use with libpq's PQconnectdb):
 --
--- >>> toKeyValueString connStr
+-- >>> toKeyValueString "postgresql://user:password@localhost:5432/mydb"
 -- "host=localhost port=5432 user=user password=password dbname=mydb"
+--
+-- Note that these examples use the 'IsString' instance for brevity.
 module ConnectionString
   ( -- * Data Types
     ConnectionString,
 
     -- * Parsing
-    parseText,
-    parserOf,
+    parse,
+    megaparsec,
+
+    -- * Rendering
+    toUrl,
+    toKeyValueString,
 
     -- * Accessors
     toHosts,
@@ -51,13 +60,12 @@ module ConnectionString
     toPassword,
     toDbname,
     toParams,
-    toUrl,
-    toKeyValueString,
 
     -- * Transformations
     interceptParam,
 
     -- * Constructors
+    host,
     hostAndPort,
     user,
     password,
@@ -77,7 +85,7 @@ import TextBuilder qualified
 
 instance IsString ConnectionString where
   fromString =
-    either fromError id . parseText . fromString
+    either fromError id . parse . fromString
     where
       fromError = const mempty
 
@@ -310,8 +318,7 @@ toKeyValueString (ConnectionString user password hostspec dbname paramspec) =
 --
 -- >>> let connStr = mconcat [param "application_name" "myapp", param "connect_timeout" "10"]
 -- >>> interceptParam "application_name" connStr
--- Just ("myapp", ConnectionString ...)
--- >>> -- The returned ConnectionString only contains connect_timeout=10
+-- Just ("myapp", "postgresql://?connect_timeout=10")
 --
 -- >>> interceptParam "nonexistent" connStr
 -- Nothing
@@ -341,30 +348,30 @@ interceptParam key (ConnectionString user password hostspec dbname paramspec) =
 --
 -- URI format examples:
 --
--- >>> parseText "postgresql://localhost"
--- Right (ConnectionString ...)
+-- >>> parse "postgresql://localhost"
+-- Right ...
 --
--- >>> parseText "postgresql://user:password@localhost:5432/mydb"
--- Right (ConnectionString ...)
+-- >>> parse "postgresql://user:password@localhost:5432/mydb"
+-- Right ...
 --
--- >>> parseText "postgres://host1:5432,host2:5433/mydb?connect_timeout=10"
--- Right (ConnectionString ...)
+-- >>> parse "postgres://host1:5432,host2:5433/mydb?connect_timeout=10"
+-- Right ...
 --
 -- Keyword\/value format examples:
 --
--- >>> parseText "host=localhost port=5432 user=postgres"
--- Right (ConnectionString ...)
+-- >>> parse "host=localhost port=5432 user=postgres"
+-- Right ...
 --
--- >>> parseText "host=localhost dbname=mydb"
--- Right (ConnectionString ...)
+-- >>> parse "host=localhost dbname=mydb"
+-- Right ...
 --
 -- Returns 'Left' with an error message if parsing fails:
 --
--- >>> parseText "invalid://connection"
+-- >>> parse "invalid://connection"
 -- Left "parse error message"
-parseText :: Text -> Either Text ConnectionString
-parseText input =
-  Megaparsec.parse parserOf "" input
+parse :: Text -> Either Text ConnectionString
+parse input =
+  Megaparsec.parse megaparsec "" input
     & first (fromString . Megaparsec.errorBundlePretty)
 
 -- | Get the Megaparsec parser for connection strings.
@@ -374,14 +381,29 @@ parseText input =
 --
 -- The parser accepts both URI format (@postgresql:\/\/@ or @postgres:\/\/@)
 -- and keyword\/value format connection strings.
-parserOf :: Megaparsec.Parsec Void Text ConnectionString
-parserOf = Parsers.getConnectionString
+megaparsec :: Megaparsec.Parsec Void Text ConnectionString
+megaparsec = Parsers.getConnectionString
 
 -- * Constructors
 
--- | Create a connection string with a single host and optional port.
+-- | Create a connection string with a single host and without specifying a port.
 --
--- Multiple hosts can be specified by combining multiple 'hostAndPort' values
+-- Multiple hosts can be specified by combining multiple 'host' or 'hostAndPort' values
+-- using the 'Semigroup' instance.
+--
+-- When you need to specify a port, use 'hostAndPort' instead.
+host :: Text -> ConnectionString
+host hostname =
+  ConnectionString
+    Nothing
+    Nothing
+    [Host hostname Nothing]
+    Nothing
+    Map.empty
+
+-- | Create a connection string with a single host and port.
+--
+-- Multiple hosts can be specified by combining multiple 'hostAndPort' or 'host' values
 -- using the 'Semigroup' instance.
 --
 -- Examples:
@@ -394,12 +416,12 @@ parserOf = Parsers.getConnectionString
 --
 -- >>> toUrl (mconcat [hostAndPort "host1" (Just 5432), hostAndPort "host2" (Just 5433)])
 -- "postgresql://host1:5432,host2:5433"
-hostAndPort :: Text -> Maybe Word16 -> ConnectionString
+hostAndPort :: Text -> Word16 -> ConnectionString
 hostAndPort host port =
   ConnectionString
     Nothing
     Nothing
-    [Host host port]
+    [Host host (Just port)]
     Nothing
     Map.empty
 

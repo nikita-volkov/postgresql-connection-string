@@ -12,10 +12,10 @@ main :: IO ()
 main = hspec do
   describe "ConnectionString" do
     describe "roundtrip property" do
-      it "toUrl . parseText is identity for valid connection strings" do
+      it "toUrl . parse is identity for valid connection strings" do
         property \connStr ->
           let url = ConnectionString.toUrl connStr
-           in case ConnectionString.parseText url of
+           in case ConnectionString.parse url of
                 Left err -> counterexample ("Parse error: " <> Text.unpack err <> "\nURL: " <> Text.unpack url) False
                 Right parsed -> parsed === connStr
 
@@ -38,22 +38,22 @@ main = hspec do
         url `shouldBe` "postgresql://myuser:secret@"
 
       it "encodes host correctly" do
-        let connStr = ConnectionString.hostAndPort "localhost" Nothing
+        let connStr = ConnectionString.host "localhost"
             url = ConnectionString.toUrl connStr
         url `shouldBe` "postgresql://localhost"
 
       it "encodes host with port correctly" do
-        let connStr = ConnectionString.hostAndPort "localhost" (Just 5433)
+        let connStr = ConnectionString.hostAndPort "localhost" 5433
             url = ConnectionString.toUrl connStr
         url `shouldBe` "postgresql://localhost:5433"
 
       it "encodes multiple hosts correctly" do
-        let connStr = mconcat [ConnectionString.hostAndPort "host1" (Just 123), ConnectionString.hostAndPort "host2" (Just 456)]
+        let connStr = mconcat [ConnectionString.hostAndPort "host1" 123, ConnectionString.hostAndPort "host2" 456]
             url = ConnectionString.toUrl connStr
         url `shouldBe` "postgresql://host1:123,host2:456"
 
       it "encodes database name correctly" do
-        let connStr = mconcat [ConnectionString.hostAndPort "localhost" Nothing, ConnectionString.dbname "mydb"]
+        let connStr = mconcat [ConnectionString.host "localhost", ConnectionString.dbname "mydb"]
             url = ConnectionString.toUrl connStr
         url `shouldBe` "postgresql://localhost/mydb"
 
@@ -67,50 +67,50 @@ main = hspec do
               mconcat
                 [ ConnectionString.user "user",
                   ConnectionString.password "secret",
-                  ConnectionString.hostAndPort "localhost" (Just 5433),
+                  ConnectionString.hostAndPort "localhost" 5433,
                   ConnectionString.dbname "mydb",
                   ConnectionString.param "connect_timeout" "10"
                 ]
             url = ConnectionString.toUrl connStr
         url `shouldBe` "postgresql://user:secret@localhost:5433/mydb?connect_timeout=10"
 
-    describe "parseText" do
+    describe "parse" do
       it "parses minimal URL" do
-        ConnectionString.parseText "postgresql://"
+        ConnectionString.parse "postgresql://"
           `shouldBe` Right mempty
 
       it "parses URL with host" do
-        ConnectionString.parseText "postgresql://localhost"
-          `shouldBe` Right (ConnectionString.hostAndPort "localhost" Nothing)
+        ConnectionString.parse "postgresql://localhost"
+          `shouldBe` Right (ConnectionString.host "localhost")
 
       it "parses URL with host and port" do
-        ConnectionString.parseText "postgresql://localhost:5433"
-          `shouldBe` Right (ConnectionString.hostAndPort "localhost" (Just 5433))
+        ConnectionString.parse "postgresql://localhost:5433"
+          `shouldBe` Right (ConnectionString.hostAndPort "localhost" 5433)
 
       it "parses URL with host and database" do
-        ConnectionString.parseText "postgresql://localhost/mydb"
-          `shouldBe` Right (mconcat [ConnectionString.hostAndPort "localhost" Nothing, ConnectionString.dbname "mydb"])
+        ConnectionString.parse "postgresql://localhost/mydb"
+          `shouldBe` Right (mconcat [ConnectionString.host "localhost", ConnectionString.dbname "mydb"])
 
       it "parses URL with user" do
-        ConnectionString.parseText "postgresql://user@localhost"
-          `shouldBe` Right (mconcat [ConnectionString.user "user", ConnectionString.hostAndPort "localhost" Nothing])
+        ConnectionString.parse "postgresql://user@localhost"
+          `shouldBe` Right (mconcat [ConnectionString.user "user", ConnectionString.host "localhost"])
 
       it "parses URL with user and password" do
-        ConnectionString.parseText "postgresql://user:secret@localhost"
-          `shouldBe` Right (mconcat [ConnectionString.user "user", ConnectionString.password "secret", ConnectionString.hostAndPort "localhost" Nothing])
+        ConnectionString.parse "postgresql://user:secret@localhost"
+          `shouldBe` Right (mconcat [ConnectionString.user "user", ConnectionString.password "secret", ConnectionString.host "localhost"])
 
       it "parses URL with parameters" do
-        case ConnectionString.parseText "postgresql://localhost?key1=value1&key2=value2" of
+        case ConnectionString.parse "postgresql://localhost?key1=value1&key2=value2" of
           Left err -> expectationFailure (Text.unpack err)
           Right cs ->
             ConnectionString.toParams cs `shouldBe` Map.fromList [("key1", "value1"), ("key2", "value2")]
 
       it "parses complex URL" do
-        ConnectionString.parseText "postgresql://user:secret@localhost:5433/mydb?connect_timeout=10&application_name=myapp"
+        ConnectionString.parse "postgresql://user:secret@localhost:5433/mydb?connect_timeout=10&application_name=myapp"
           `shouldSatisfy` isRight
 
       it "parses URL with multiple hosts" do
-        case ConnectionString.parseText "postgresql://host1:123,host2:456/mydb" of
+        case ConnectionString.parse "postgresql://host1:123,host2:456/mydb" of
           Left err -> expectationFailure (Text.unpack err)
           Right cs ->
             ConnectionString.toHosts cs `shouldBe` [("host1", Just 123), ("host2", Just 456)]
@@ -125,11 +125,11 @@ main = hspec do
         ConnectionString.toKeyValueString connStr `shouldBe` ""
 
       it "encodes host correctly" do
-        let connStr = ConnectionString.hostAndPort "localhost" Nothing
+        let connStr = ConnectionString.host "localhost"
         ConnectionString.toKeyValueString connStr `shouldBe` "host=localhost"
 
       it "encodes host with port correctly" do
-        let connStr = ConnectionString.hostAndPort "localhost" (Just 5433)
+        let connStr = ConnectionString.hostAndPort "localhost" 5433
         ConnectionString.toKeyValueString connStr `shouldBe` "host=localhost port=5433"
 
       it "encodes user correctly" do
@@ -151,7 +151,7 @@ main = hspec do
       it "encodes full connection string correctly" do
         let connStr =
               mconcat
-                [ ConnectionString.hostAndPort "localhost" (Just 5433),
+                [ ConnectionString.hostAndPort "localhost" 5433,
                   ConnectionString.user "user",
                   ConnectionString.password "secret",
                   ConnectionString.dbname "mydb",
@@ -192,43 +192,43 @@ main = hspec do
         result `shouldBe` "password='a\\\\b\\'c d=e'"
 
       it "only includes first host (keyword/value format limitation)" do
-        let connStr = mconcat [ConnectionString.hostAndPort "host1" (Just 123), ConnectionString.hostAndPort "host2" (Just 456)]
+        let connStr = mconcat [ConnectionString.hostAndPort "host1" 123, ConnectionString.hostAndPort "host2" 456]
             result = ConnectionString.toKeyValueString connStr
         result `shouldBe` "host=host1 port=123"
 
     describe "toKeyValueString roundtrip" do
-      it "parseText . toKeyValueString is identity for simple connection strings" do
-        let connStr = mconcat [ConnectionString.hostAndPort "localhost" (Just 5432), ConnectionString.user "user", ConnectionString.dbname "db"]
+      it "parse . toKeyValueString is identity for simple connection strings" do
+        let connStr = mconcat [ConnectionString.hostAndPort "localhost" 5432, ConnectionString.user "user", ConnectionString.dbname "db"]
             kvString = ConnectionString.toKeyValueString connStr
-        case ConnectionString.parseText kvString of
+        case ConnectionString.parse kvString of
           Left err -> expectationFailure ("Parse error: " <> Text.unpack err <> "\nKV String: " <> Text.unpack kvString)
           Right parsed -> parsed `shouldBe` connStr
 
-      it "parseText . toKeyValueString handles quoted values" do
+      it "parse . toKeyValueString handles quoted values" do
         let connStr = mconcat [ConnectionString.user "my user", ConnectionString.password "secret"]
             kvString = ConnectionString.toKeyValueString connStr
-        case ConnectionString.parseText kvString of
+        case ConnectionString.parse kvString of
           Left err -> expectationFailure ("Parse error: " <> Text.unpack err <> "\nKV String: " <> Text.unpack kvString)
           Right parsed -> parsed `shouldBe` connStr
 
-      it "parseText . toKeyValueString handles escaped quotes" do
+      it "parse . toKeyValueString handles escaped quotes" do
         let connStr = ConnectionString.password "it's a secret"
             kvString = ConnectionString.toKeyValueString connStr
-        case ConnectionString.parseText kvString of
+        case ConnectionString.parse kvString of
           Left err -> expectationFailure ("Parse error: " <> Text.unpack err <> "\nKV String: " <> Text.unpack kvString)
           Right parsed -> parsed `shouldBe` connStr
 
-      it "parseText . toKeyValueString handles escaped backslashes" do
+      it "parse . toKeyValueString handles escaped backslashes" do
         let connStr = ConnectionString.password "path\\to\\file"
             kvString = ConnectionString.toKeyValueString connStr
-        case ConnectionString.parseText kvString of
+        case ConnectionString.parse kvString of
           Left err -> expectationFailure ("Parse error: " <> Text.unpack err <> "\nKV String: " <> Text.unpack kvString)
           Right parsed -> parsed `shouldBe` connStr
 
-      it "parseText . toKeyValueString handles full connection string" do
+      it "parse . toKeyValueString handles full connection string" do
         let connStr =
               mconcat
-                [ ConnectionString.hostAndPort "localhost" (Just 5433),
+                [ ConnectionString.hostAndPort "localhost" 5433,
                   ConnectionString.user "testuser",
                   ConnectionString.password "secret pass",
                   ConnectionString.dbname "testdb",
@@ -236,11 +236,11 @@ main = hspec do
                   ConnectionString.param "application_name" "my app"
                 ]
             kvString = ConnectionString.toKeyValueString connStr
-        case ConnectionString.parseText kvString of
+        case ConnectionString.parse kvString of
           Left err -> expectationFailure ("Parse error: " <> Text.unpack err <> "\nKV String: " <> Text.unpack kvString)
           Right parsed -> parsed `shouldBe` connStr
 
-      it "property: parseText . toKeyValueString roundtrips for single-host connection strings" do
+      it "property: parse . toKeyValueString roundtrips for single-host connection strings" do
         property \connStr ->
           -- Only test connection strings with at most one host, since keyword/value format
           -- doesn't support multiple hosts. Create a new connection string with only first host.
@@ -254,7 +254,7 @@ main = hspec do
                 mconcat
                   [ foldMap ConnectionString.user user,
                     foldMap ConnectionString.password password,
-                    mconcat (map (\(h, p) -> ConnectionString.hostAndPort h p) singleHost),
+                    mconcat (map (\(h, p) -> maybe (ConnectionString.host h) (ConnectionString.hostAndPort h) p) singleHost),
                     foldMap ConnectionString.dbname dbname,
                     mconcat (map (uncurry ConnectionString.param) (Map.toList params))
                   ]
@@ -262,7 +262,7 @@ main = hspec do
               -- Skip empty connection strings as they don't roundtrip
               isEmpty = Text.null kvString
            in not isEmpty ==>
-                case ConnectionString.parseText kvString of
+                case ConnectionString.parse kvString of
                   Left err -> counterexample ("Parse error: " <> Text.unpack err <> "\nKV String: " <> Text.unpack kvString) False
                   Right parsed -> parsed === connStrSingleHost
 
@@ -270,7 +270,7 @@ main = hspec do
       describe "parsing and serialization consistency" do
         it "host=localhost port=5432 dbname=mydb connect_timeout=10" do
           let input = "host=localhost port=5432 dbname=mydb connect_timeout=10"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toHosts cs `shouldBe` [("localhost", Just 5432)]
@@ -278,13 +278,13 @@ main = hspec do
               ConnectionString.toParams cs `shouldBe` Map.singleton "connect_timeout" "10"
               -- Roundtrip through URL
               let url = ConnectionString.toUrl cs
-              case ConnectionString.parseText url of
+              case ConnectionString.parse url of
                 Left err -> expectationFailure ("URL roundtrip parse error: " <> Text.unpack err)
                 Right cs2 -> cs2 `shouldBe` cs
 
         it "postgresql://" do
           let input = "postgresql://"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               cs `shouldBe` mempty
@@ -292,7 +292,7 @@ main = hspec do
 
         it "postgresql://localhost" do
           let input = "postgresql://localhost"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toHosts cs `shouldBe` [("localhost", Nothing)]
@@ -300,7 +300,7 @@ main = hspec do
 
         it "postgresql://localhost:5433" do
           let input = "postgresql://localhost:5433"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toHosts cs `shouldBe` [("localhost", Just 5433)]
@@ -308,7 +308,7 @@ main = hspec do
 
         it "postgresql://localhost/mydb" do
           let input = "postgresql://localhost/mydb"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toHosts cs `shouldBe` [("localhost", Nothing)]
@@ -317,7 +317,7 @@ main = hspec do
 
         it "postgresql://user@localhost" do
           let input = "postgresql://user@localhost"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toUser cs `shouldBe` Just "user"
@@ -326,7 +326,7 @@ main = hspec do
 
         it "postgresql://user:secret@localhost" do
           let input = "postgresql://user:secret@localhost"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toUser cs `shouldBe` Just "user"
@@ -336,7 +336,7 @@ main = hspec do
 
         it "postgresql://other@localhost/otherdb?connect_timeout=10&application_name=myapp" do
           let input = "postgresql://other@localhost/otherdb?connect_timeout=10&application_name=myapp"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toUser cs `shouldBe` Just "other"
@@ -345,13 +345,13 @@ main = hspec do
               ConnectionString.toParams cs `shouldBe` Map.fromList [("connect_timeout", "10"), ("application_name", "myapp")]
               -- Roundtrip
               let url = ConnectionString.toUrl cs
-              case ConnectionString.parseText url of
+              case ConnectionString.parse url of
                 Left err -> expectationFailure ("URL roundtrip parse error: " <> Text.unpack err)
                 Right cs2 -> cs2 `shouldBe` cs
 
         it "postgresql://host1:123,host2:456/somedb?target_session_attrs=any&application_name=myapp" do
           let input = "postgresql://host1:123,host2:456/somedb?target_session_attrs=any&application_name=myapp"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toHosts cs `shouldBe` [("host1", Just 123), ("host2", Just 456)]
@@ -359,13 +359,13 @@ main = hspec do
               ConnectionString.toParams cs `shouldBe` Map.fromList [("target_session_attrs", "any"), ("application_name", "myapp")]
               -- Roundtrip
               let url = ConnectionString.toUrl cs
-              case ConnectionString.parseText url of
+              case ConnectionString.parse url of
                 Left err -> expectationFailure ("URL roundtrip parse error: " <> Text.unpack err)
                 Right cs2 -> cs2 `shouldBe` cs
 
         it "postgresql://user@localhost:5433/mydb?options=-c%20synchronous_commit%3Doff" do
           let input = "postgresql://user@localhost:5433/mydb?options=-c%20synchronous_commit%3Doff"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toUser cs `shouldBe` Just "user"
@@ -374,39 +374,39 @@ main = hspec do
               ConnectionString.toParams cs `shouldBe` Map.singleton "options" "-c synchronous_commit=off"
               -- Roundtrip
               let url = ConnectionString.toUrl cs
-              case ConnectionString.parseText url of
+              case ConnectionString.parse url of
                 Left err -> expectationFailure ("URL roundtrip parse error: " <> Text.unpack err)
                 Right cs2 -> cs2 `shouldBe` cs
 
         it "postgresql:///dbname?host=/var/lib/postgresql" do
           let input = "postgresql:///dbname?host=/var/lib/postgresql"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toDbname cs `shouldBe` Just "dbname"
               ConnectionString.toParams cs `shouldBe` Map.singleton "host" "/var/lib/postgresql"
               -- Roundtrip
               let url = ConnectionString.toUrl cs
-              case ConnectionString.parseText url of
+              case ConnectionString.parse url of
                 Left err -> expectationFailure ("URL roundtrip parse error: " <> Text.unpack err)
                 Right cs2 -> cs2 `shouldBe` cs
 
         it "postgresql://%2Fvar%2Flib%2Fpostgresql/dbname" do
           let input = "postgresql://%2Fvar%2Flib%2Fpostgresql/dbname"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               ConnectionString.toHosts cs `shouldBe` [("/var/lib/postgresql", Nothing)]
               ConnectionString.toDbname cs `shouldBe` Just "dbname"
               -- Roundtrip
               let url = ConnectionString.toUrl cs
-              case ConnectionString.parseText url of
+              case ConnectionString.parse url of
                 Left err -> expectationFailure ("URL roundtrip parse error: " <> Text.unpack err)
                 Right cs2 -> cs2 `shouldBe` cs
 
         it "postgresql://host1:1,host2:2,host3:3/" do
           let input = "postgresql://host1:1,host2:2,host3:3/"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               -- Port names should be parsed as text, but will fail to parse as numbers
@@ -416,13 +416,13 @@ main = hspec do
               length hosts `shouldBe` 3
               -- For now, just verify it parses and roundtrips
               let url = ConnectionString.toUrl cs
-              case ConnectionString.parseText url of
+              case ConnectionString.parse url of
                 Left err -> expectationFailure ("URL roundtrip parse error: " <> Text.unpack err)
                 Right cs2 -> cs2 `shouldBe` cs
 
         it "host=host1,host2,host3 port=1,2,3" do
           let input = "host=host1,host2,host3 port=1,2,3"
-          case ConnectionString.parseText input of
+          case ConnectionString.parse input of
             Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
             Right cs -> do
               -- In keyword/value format, multiple hosts are separated by commas in the value
@@ -435,7 +435,7 @@ main = hspec do
         it "postgresql://host1:1,host2:2,host3:3/ is equivalent to host=host1,host2,host3 port=1,2,3" do
           let url = "postgresql://host1:1,host2:2,host3:3/"
               kv = "host=host1,host2,host3 port=1,2,3"
-          case (ConnectionString.parseText url, ConnectionString.parseText kv) of
+          case (ConnectionString.parse url, ConnectionString.parse kv) of
             (Right cs1, Right cs2) -> do
               -- They should represent the same connection
               -- At minimum, they should have the same number of hosts
