@@ -18,9 +18,7 @@ import Test.QuickCheck qualified as QuickCheck
 --
 -- 'ConnectionString' has 'Semigroup' and 'Monoid' instances that allow combining
 -- connection strings. When combining, the right-hand side takes precedence for
--- scalar values (user, password, dbname), while lists (hosts) are concatenated
--- and maps (params) are unioned (with right-hand side taking precedence for
--- duplicate keys).
+-- scalar values, while the list of hosts gets concatenated.
 data ConnectionString
   = ConnectionString
       -- | Username for authentication.
