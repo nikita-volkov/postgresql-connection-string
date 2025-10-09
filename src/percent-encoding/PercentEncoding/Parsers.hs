@@ -1,14 +1,14 @@
 module PercentEncoding.Parsers where
 
-import Control.Exception qualified as Exception
-import Data.ByteString qualified as ByteString
-import Data.Text.Encoding qualified as Text.Encoding
-import Data.Text.Encoding.Error qualified as Text.Encoding
-import PercentEncoding.MonadPlus qualified as MonadPlus
+import qualified Control.Exception as Exception
+import qualified Data.ByteString as ByteString
+import qualified Data.Text.Encoding as Text.Encoding
+import qualified Data.Text.Encoding.Error as Text.Encoding
+import qualified PercentEncoding.MonadPlus as MonadPlus
 import Platform.Prelude hiding (try)
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import TextBuilder qualified as TextBuilder
+import qualified TextBuilder as TextBuilder
 
 type Parser = Parsec Void Text
 

@@ -1,9 +1,9 @@
 module PercentEncoding.TextBuilders where
 
-import Data.CharSet qualified as CharSet
-import Data.Text qualified as Text
-import PercentEncoding.Charsets qualified as Charsets
-import PercentEncoding.Utf8CharView qualified as Utf8CharView
+import qualified Data.CharSet as CharSet
+import qualified Data.Text as Text
+import qualified PercentEncoding.Charsets as Charsets
+import qualified PercentEncoding.Utf8CharView as Utf8CharView
 import Platform.Prelude
 import TextBuilder
 

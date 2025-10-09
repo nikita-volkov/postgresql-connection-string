@@ -1,6 +1,6 @@
 module PostgresqlConnectionString.Types.Gens where
 
-import Data.Map.Strict qualified as Map
+import qualified Data.Map.Strict as Map
 import Platform.Prelude
 import Test.QuickCheck
 
