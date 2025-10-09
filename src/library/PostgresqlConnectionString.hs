@@ -74,14 +74,14 @@ module PostgresqlConnectionString
   )
 where
 
-import Data.Map.Strict qualified as Map
-import Data.Text qualified as Text
-import PercentEncoding qualified
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as Text
+import qualified PercentEncoding
 import Platform.Prelude
-import PostgresqlConnectionString.Parsers qualified as Parsers
+import qualified PostgresqlConnectionString.Parsers as Parsers
 import PostgresqlConnectionString.Types
-import Text.Megaparsec qualified as Megaparsec
-import TextBuilder qualified
+import qualified Text.Megaparsec as Megaparsec
+import qualified TextBuilder
 
 instance IsString ConnectionString where
   fromString =

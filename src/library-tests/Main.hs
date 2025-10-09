@@ -1,12 +1,12 @@
 module Main where
 
-import Data.Map.Strict qualified as Map
-import Data.Text qualified as Text
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as Text
 import Platform.Prelude
-import PostgresqlConnectionString qualified as ConnectionString
+import qualified PostgresqlConnectionString as ConnectionString
 import Test.Hspec
 import Test.QuickCheck
-import Test.QuickCheck.Classes qualified as Laws
+import qualified Test.QuickCheck.Classes as Laws
 
 main :: IO ()
 main = hspec do

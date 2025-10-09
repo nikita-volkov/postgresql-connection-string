@@ -2,10 +2,10 @@
 
 module PostgresqlConnectionString.Parsers where
 
-import Data.CharSet qualified as CharSet
-import Data.Map.Strict qualified as Map
-import Data.Text qualified as Text
-import PercentEncoding qualified
+import qualified Data.CharSet as CharSet
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as Text
+import qualified PercentEncoding
 import Platform.Prelude hiding (many, some, try)
 import PostgresqlConnectionString.Types
 import Text.Megaparsec

@@ -1,9 +1,9 @@
 module PercentEncoding where
 
-import PercentEncoding.Parsers qualified as Parsers
-import PercentEncoding.TextBuilders qualified as TextBuilders
+import qualified PercentEncoding.Parsers as Parsers
+import qualified PercentEncoding.TextBuilders as TextBuilders
 import Platform.Prelude
-import Text.Megaparsec qualified as Megaparsec
+import qualified Text.Megaparsec as Megaparsec
 
 encodeText :: Text -> TextBuilder
 encodeText = TextBuilders.urlEncodedText

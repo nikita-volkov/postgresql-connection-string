@@ -6,10 +6,10 @@
 -- Users typically don't need to import this module directly; use "ConnectionString" instead.
 module PostgresqlConnectionString.Types where
 
-import Data.Map.Strict qualified as Map
+import qualified Data.Map.Strict as Map
 import Platform.Prelude
-import PostgresqlConnectionString.Types.Gens qualified as Gens
-import Test.QuickCheck qualified as QuickCheck
+import qualified PostgresqlConnectionString.Types.Gens as Gens
+import qualified Test.QuickCheck as QuickCheck
 
 -- | A PostgreSQL connection string.
 --
