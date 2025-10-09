@@ -1,10 +1,21 @@
-name: Compile, test and check the docs
+name: Format and test
 
 on:
+  push:
+    branches:
+      - master
+  pull_request:
   workflow_call: 
 
-jobs:
+concurrency:
+  group: format-and-test
+  cancel-in-progress: true
 
+jobs:
+  format:
+    uses: nikita-volkov/haskell-hackage-lib-github-actions-workflows/.github/workflows/format.yaml@v4
+    secrets: inherit
+  
   check-cabal:
     uses: nikita-volkov/haskell-hackage-lib-github-actions-workflows/.github/workflows/check-cabal.yaml@v4
     secrets: inherit
@@ -13,16 +24,19 @@ jobs:
     uses: nikita-volkov/haskell-hackage-lib-github-actions-workflows/.github/workflows/generate-docs.yaml@v4
     secrets: inherit
 
-  build-with-ghc-8-10:
+  build-ghc-8-8:
     uses: nikita-volkov/haskell-hackage-lib-github-actions-workflows/.github/workflows/build.yaml@v4
     secrets: inherit
     with:
-      ghc: "8.10"
+      ghc: "8.8.1"
       skip-doctest: true
       skip-benchmarks: true
-  
-  build-with-latest:
+      test-options: >
+        --qc-max-success=10000
+
+  build-latest:
     uses: nikita-volkov/haskell-hackage-lib-github-actions-workflows/.github/workflows/build.yaml@v4
     secrets: inherit
     with:
-      skip-doctest: true
+      test-options: >
+        --qc-max-success=10000
