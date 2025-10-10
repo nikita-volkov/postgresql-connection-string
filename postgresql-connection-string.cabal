@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name: postgresql-connection-string
-version: 0.1
+version: 0.1.0.1
 category: Database, PostgreSQL
 synopsis: PostgreSQL connection string type, parser and builder
 description:
@@ -117,6 +117,7 @@ library
 -- Covers such things as Prelude and shared utils.
 library platform
   import: base
+  visibility: private
   hs-source-dirs: src/platform
   exposed-modules:
     Platform.Prelude
@@ -130,6 +131,7 @@ library platform
 
 library percent-encoding
   import: base
+  visibility: private
   hs-source-dirs: src/percent-encoding
   exposed-modules:
     PercentEncoding
