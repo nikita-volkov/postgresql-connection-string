@@ -54,6 +54,23 @@ genParams size = do
   pure (Map.fromList pairs)
   where
     genParamPair = do
-      key <- genSafeText (size `div` 2)
+      key <- genKey (size `div` 2)
       value <- genSafeText (size `div` 2)
       pure (key, value)
+
+genKey :: Int -> Gen Text
+genKey size = do
+  len <- chooseInt (0, max 1 (size `div` 2))
+  head <- elements (['a' .. 'z'] <> ['A' .. 'Z'] <> ['_'])
+  tail <- vectorOf len do
+    elements (['a' .. 'z'] <> ['A' .. 'Z'] <> ['0' .. '9'] <> ['_'])
+  pure (fromString (head : tail))
+
+-- | Generate text with safe characters (letters, numbers, basic punctuation)
+genValue :: Int -> Gen Text
+genValue size = do
+  len <- chooseInt (0, max 1 (size `div` 2))
+  chars <- vectorOf len genSafeChar
+  pure (fromString chars)
+  where
+    genSafeChar = elements (['a' .. 'z'] <> ['A' .. 'Z'] <> ['0' .. '9'] <> ['_', '-', '.', ' '])

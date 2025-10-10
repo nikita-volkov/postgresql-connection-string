@@ -99,6 +99,7 @@ library
     PostgresqlConnectionString
 
   other-modules:
+    PostgresqlConnectionString.Charsets
     PostgresqlConnectionString.Parsers
     PostgresqlConnectionString.Types
     PostgresqlConnectionString.Types.Gens

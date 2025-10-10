@@ -7,6 +7,7 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Text as Text
 import qualified PercentEncoding
 import Platform.Prelude hiding (many, some, try)
+import qualified PostgresqlConnectionString.Charsets as Charsets
 import PostgresqlConnectionString.Types
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -115,17 +116,23 @@ getKeyValueParams = do
 
 getKeyValueParam :: P (Text, Text)
 getKeyValueParam = do
-  key <- some (satisfy (\c -> c /= '=' && c /= ' '))
+  key <- try do
+    getKeyValueKey
   char '='
   value <- getKeyValueParamValue
-  pure (fromString key, fromString value)
+  pure (key, value)
 
-getKeyValueParamValue :: P String
+getKeyValueKey :: P Text
+getKeyValueKey =
+  takeWhile1P (Just "Key") \c -> CharSet.member c Charsets.keyName
+
+getKeyValueParamValue :: P Text
 getKeyValueParamValue =
+  -- TODO: Optimize to avoid intermediate String allocation
   asum
     [ do
         -- Quoted value
-        char '\''
+        try (char '\'')
         chars <- many do
           asum
             [ do
@@ -139,20 +146,16 @@ getKeyValueParamValue =
               satisfy (/= '\'')
             ]
         char '\''
-        pure chars,
+        pure (fromString chars),
       -- Unquoted value
-      some (satisfy (\c -> c /= ' ' && c /= '\n'))
+      fromString <$> some (satisfy (\c -> c /= ' ' && c /= '\n'))
     ]
 
 getWord :: P Text
-getWord = PercentEncoding.parser (flip CharSet.member controlCharset)
-  where
-    controlCharset = CharSet.fromList ":@?/=&,"
+getWord = PercentEncoding.parser (flip CharSet.member Charsets.control)
 
 getParamValue :: P Text
-getParamValue = PercentEncoding.parser (flip CharSet.member paramControlCharset)
-  where
-    paramControlCharset = CharSet.fromList "&"
+getParamValue = PercentEncoding.parser (flip CharSet.member Charsets.paramControl)
 
 continueAfterHostspec :: Maybe Text -> Maybe Text -> [Host] -> P ConnectionString
 continueAfterHostspec user password hosts = do
