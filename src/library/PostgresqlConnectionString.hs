@@ -392,6 +392,11 @@ megaparsecOf = Parsers.getConnectionString
 -- using the 'Semigroup' instance.
 --
 -- When you need to specify a port, use 'hostAndPort' instead.
+--
+-- Examples:
+--
+-- >>> toUrl (host "localhost")
+-- "postgresql://localhost"
 host :: Text -> ConnectionString
 host hostname =
   ConnectionString
@@ -407,9 +412,6 @@ host hostname =
 -- using the 'Semigroup' instance.
 --
 -- Examples:
---
--- >>> toUrl (host "localhost")
--- "postgresql://localhost"
 --
 -- >>> toUrl (hostAndPort "localhost" 5432)
 -- "postgresql://localhost:5432"
