@@ -83,48 +83,6 @@ toDbname :: ConnectionString -> Maybe Text
 toParams :: ConnectionString -> Map Text Text
 ```
 
-### Transforming Connection Strings
-
-```haskell
--- Intercept and remove a parameter
-case interceptParam "application_name" connStr of
-  Just (value, updatedConnStr) -> 
-    -- value is the parameter value, updatedConnStr has it removed
-    processAppName value
-  Nothing -> 
-    -- Parameter not found
-    useDefault
-```
-
-## Installation
-
-Add to your `package.yaml` or `.cabal` file:
-
-```yaml
-dependencies:
-  - postgresql-connection-string
-```
-
-Or with cabal:
-
-```cabal
-build-depends:
-  postgresql-connection-string
-```
-
-## Requirements
-
-- GHC 8.10 or later
-- Standard Haskell dependencies (see cabal file)
-
 ## Related Projects
 
 This library was extracted from the [hasql](https://github.com/nikita-volkov/hasql) project to provide a standalone connection string parser and builder that can be used independently of the full hasql ecosystem.
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit pull requests or open issues on GitHub.
