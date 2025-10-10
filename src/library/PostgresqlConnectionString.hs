@@ -368,7 +368,7 @@ interceptParam key (ConnectionString user password hostspec dbname paramspec) =
 -- Returns 'Left' with an error message if parsing fails:
 --
 -- >>> parse "invalid://connection"
--- Left "parse error message"
+-- Left ...
 parse :: Text -> Either Text ConnectionString
 parse input =
   Megaparsec.parse megaparsecOf "" input
@@ -395,7 +395,7 @@ megaparsecOf = Parsers.getConnectionString
 --
 -- Examples:
 --
--- >>> toUrl (host "localhost")
+-- >>> host "localhost"
 -- "postgresql://localhost"
 host :: Text -> ConnectionString
 host hostname =
@@ -413,10 +413,10 @@ host hostname =
 --
 -- Examples:
 --
--- >>> toUrl (hostAndPort "localhost" 5432)
+-- >>> hostAndPort "localhost" 5432
 -- "postgresql://localhost:5432"
 --
--- >>> toUrl (mconcat [hostAndPort "host1" 5432, hostAndPort "host2" 5433])
+-- >>> mconcat [hostAndPort "host1" 5432, hostAndPort "host2" 5433]
 -- "postgresql://host1:5432,host2:5433"
 hostAndPort :: Text -> Word16 -> ConnectionString
 hostAndPort host port =
@@ -431,10 +431,10 @@ hostAndPort host port =
 --
 -- Examples:
 --
--- >>> toUrl (user "myuser")
+-- >>> user "myuser"
 -- "postgresql://myuser@"
 --
--- >>> toUrl (mconcat [user "myuser", host "localhost"])
+-- >>> mconcat [user "myuser", host "localhost"]
 -- "postgresql://myuser@localhost"
 user :: Text -> ConnectionString
 user username =
@@ -451,10 +451,10 @@ user username =
 --
 -- Examples:
 --
--- >>> toUrl (mconcat [user "myuser", password "secret"])
+-- >>> mconcat [user "myuser", password "secret"]
 -- "postgresql://myuser:secret@"
 --
--- >>> toUrl (mconcat [user "myuser", password "secret", host "localhost"])
+-- >>> mconcat [user "myuser", password "secret", host "localhost"]
 -- "postgresql://myuser:secret@localhost"
 password :: Text -> ConnectionString
 password pwd =
@@ -469,10 +469,10 @@ password pwd =
 --
 -- Examples:
 --
--- >>> toUrl (dbname "mydb")
+-- >>> dbname "mydb"
 -- "postgresql:///mydb"
 --
--- >>> toUrl (mconcat [host "localhost", dbname "mydb"])
+-- >>> mconcat [host "localhost", dbname "mydb"]
 -- "postgresql://localhost/mydb"
 dbname :: Text -> ConnectionString
 dbname db =
@@ -498,13 +498,13 @@ dbname db =
 --
 -- Examples:
 --
--- >>> toUrl (param "application_name" "myapp")
+-- >>> param "application_name" "myapp"
 -- "postgresql://?application_name=myapp"
 --
--- >>> toUrl (mconcat [host "localhost", param "connect_timeout" "10"])
+-- >>> mconcat [host "localhost", param "connect_timeout" "10"]
 -- "postgresql://localhost?connect_timeout=10"
 --
--- >>> toUrl (mconcat [param "application_name" "myapp", param "connect_timeout" "10"])
+-- >>> mconcat [param "application_name" "myapp", param "connect_timeout" "10"]
 -- "postgresql://?application_name=myapp&connect_timeout=10"
 param :: Text -> Text -> ConnectionString
 param key value =
