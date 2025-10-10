@@ -369,6 +369,16 @@ interceptParam key (ConnectionString user password hostspec dbname paramspec) =
 --
 -- >>> parse "invalid://connection"
 -- Left ...
+--
+-- The error message is quite detailed (it is produced by Megaparsec):
+--
+-- >>> parse "invalid://connection=" & either id (const "") & Data.Text.IO.putStrLn
+-- 1:8:
+--   |
+-- 1 | invalid://connection=
+--   |        ^
+-- unexpected ':'
+-- expecting '=' or Key
 parse :: Text -> Either Text ConnectionString
 parse input =
   Megaparsec.parse megaparsecOf "" input
