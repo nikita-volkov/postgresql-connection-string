@@ -71,6 +71,9 @@ module PostgresqlConnectionString
     password,
     dbname,
     param,
+
+    -- * Conversions
+    IsConnectionString (..),
   )
 where
 
@@ -524,3 +527,25 @@ param key value =
     []
     Nothing
     (Map.singleton key value)
+
+-- * Conversions
+
+-- | Type class for types that are isomorphic to 'ConnectionString'.
+--
+-- Isomorphism laws apply:
+--
+-- * @to . from = id@
+-- * @from . to = id@
+--
+-- This means that converting a value to 'ConnectionString' and back
+-- should yield the original value, and vice versa.
+class IsConnectionString a where
+  -- | Construct 'ConnectionString' **from** type @a@.
+  --
+  -- When imported qualified it reads naturally: @ConnectionString.from@.
+  from :: a -> ConnectionString
+
+  -- | Convert 'ConnectionString' **to** type @a@.
+  --
+  -- When imported qualified it reads naturally: @ConnectionString.to@.
+  to :: ConnectionString -> a
