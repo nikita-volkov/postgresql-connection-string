@@ -73,7 +73,7 @@ module PostgresqlConnectionString
     param,
 
     -- * Conversions
-    IsConnectionString (..),
+    IsomorphicTo (..),
   )
 where
 
@@ -539,7 +539,7 @@ param key value =
 --
 -- This means that converting a value to 'ConnectionString' and back
 -- should yield the original value, and vice versa.
-class IsConnectionString a where
+class IsomorphicTo a where
   -- | Construct 'ConnectionString' **from** type @a@.
   --
   -- When imported qualified it reads naturally: @ConnectionString.from@.
