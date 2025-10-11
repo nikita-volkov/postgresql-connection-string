@@ -1,12 +1,16 @@
 module Main where
 
+import Control.Monad
+import Data.Either
+import Data.Function
 import qualified Data.Map.Strict as Map
+import Data.Proxy
 import qualified Data.Text as Text
-import Platform.Prelude
 import qualified PostgresqlConnectionString as ConnectionString
 import Test.Hspec
 import Test.QuickCheck
 import qualified Test.QuickCheck.Classes as Laws
+import Prelude
 
 main :: IO ()
 main = hspec do
@@ -23,8 +27,7 @@ main = hspec do
       it "generates valid postgresql:// URLs" do
         property \connStr ->
           let url = ConnectionString.toUrl connStr
-              urlStr = Text.unpack url
-           in (url `elem` ["postgresql://", "postgres://"] || "postgresql://" `isPrefixOf` urlStr)
+           in (url `elem` ["postgresql://", "postgres://"] || "postgresql://" `Text.isPrefixOf` url)
                 & counterexample ("Generated URL: " <> Text.unpack url)
 
       it "encodes user correctly" do
