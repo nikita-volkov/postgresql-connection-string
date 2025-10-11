@@ -99,6 +99,13 @@ library
     PostgresqlConnectionString
 
   other-modules:
+    PercentEncoding
+    PercentEncoding.Charsets
+    PercentEncoding.MonadPlus
+    PercentEncoding.Parsers
+    PercentEncoding.TextBuilders
+    PercentEncoding.Utf8CharView
+    Platform.Prelude
     PostgresqlConnectionString.Charsets
     PostgresqlConnectionString.Parsers
     PostgresqlConnectionString.Types
@@ -106,50 +113,12 @@ library
 
   build-depends:
     QuickCheck >=2.14 && <2.16,
+    base >=4.13 && <5,
+    bytestring >=0.10 && <0.13,
     charset ^>=0.3.12,
     containers >=0.6 && <0.9,
-    megaparsec >=9.2.1 && <10.0,
-    postgresql-connection-string:percent-encoding,
-    postgresql-connection-string:platform,
-    text >=1.2 && <3,
-    text-builder >=1 && <1.1,
-
--- Replacement of the "base" library for all the sublibs here.
--- Covers such things as Prelude and shared utils.
-library platform
-  import: base
-  visibility: private
-  hs-source-dirs: src/platform
-  exposed-modules:
-    Platform.Prelude
-
-  build-depends:
-    base >=4.13 && <5,
-    bytestring >=0.10 && <0.13,
     hashable >=1.2 && <2,
-    text >=1.2 && <3,
-    text-builder >=1 && <1.1,
-
-library percent-encoding
-  import: base
-  visibility: private
-  hs-source-dirs: src/percent-encoding
-  exposed-modules:
-    PercentEncoding
-
-  other-modules:
-    PercentEncoding.Charsets
-    PercentEncoding.MonadPlus
-    PercentEncoding.Parsers
-    PercentEncoding.TextBuilders
-    PercentEncoding.Utf8CharView
-
-  build-depends:
-    base >=4.13 && <5,
-    bytestring >=0.10 && <0.13,
-    charset ^>=0.3.12,
     megaparsec >=9.2.1 && <10.0,
-    postgresql-connection-string:platform,
     text >=1.2 && <3,
     text-builder >=1 && <1.1,
 
@@ -160,9 +129,9 @@ test-suite library-tests
   main-is: Main.hs
   build-depends:
     QuickCheck >=2.14 && <2.16,
+    base >=4.13 && <5,
     containers >=0.6 && <0.9,
     hspec ^>=2.11.12,
     postgresql-connection-string,
-    postgresql-connection-string:platform,
     quickcheck-classes >=0.6.5 && <0.7,
     text >=1.2 && <3,
