@@ -3,3 +3,4 @@ allow-newer:
   , *:base
   , *:ghc
   , *:template-haskell
+  , *:time
