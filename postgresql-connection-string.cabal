@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name: postgresql-connection-string
-version: 0.1.0.3
+version: 0.1.0.4
 category: Database, PostgreSQL
 synopsis: PostgreSQL connection string type, parser and builder
 description:
@@ -112,7 +112,7 @@ library
     PostgresqlConnectionString.Types.Gens
 
   build-depends:
-    QuickCheck >=2.14 && <2.16,
+    QuickCheck >=2.14 && <3,
     base >=4.13 && <5,
     bytestring >=0.10 && <0.13,
     charset ^>=0.3.12,
