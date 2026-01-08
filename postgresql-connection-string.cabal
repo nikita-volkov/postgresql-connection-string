@@ -128,7 +128,7 @@ test-suite library-tests
   hs-source-dirs: src/library-tests
   main-is: Main.hs
   build-depends:
-    QuickCheck >=2.14 && <2.16,
+    QuickCheck >=2.14 && <3,
     base >=4.13 && <5,
     containers >=0.6 && <0.9,
     hspec ^>=2.11.12,
