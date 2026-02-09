@@ -337,6 +337,25 @@ main = hspec do
               ConnectionString.toHosts cs `shouldBe` [("localhost", Nothing)]
               ConnectionString.toUrl cs `shouldBe` "postgresql://user:secret@localhost"
 
+        it "postgresql://user:@localhost (empty password)" do
+          let input = "postgresql://user:@localhost"
+          case ConnectionString.parse input of
+            Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
+            Right cs -> do
+              ConnectionString.toUser cs `shouldBe` Just "user"
+              ConnectionString.toPassword cs `shouldBe` Just ""
+              ConnectionString.toHosts cs `shouldBe` [("localhost", Nothing)]
+
+        it "postgresql://user:@localhost:5432/mydb (empty password with port and db)" do
+          let input = "postgresql://user:@localhost:5432/mydb"
+          case ConnectionString.parse input of
+            Left err -> expectationFailure ("Parse error: " <> Text.unpack err)
+            Right cs -> do
+              ConnectionString.toUser cs `shouldBe` Just "user"
+              ConnectionString.toPassword cs `shouldBe` Just ""
+              ConnectionString.toHosts cs `shouldBe` [("localhost", Just 5432)]
+              ConnectionString.toDbname cs `shouldBe` Just "mydb"
+
         it "postgresql://other@localhost/otherdb?connect_timeout=10&application_name=myapp" do
           let input = "postgresql://other@localhost/otherdb?connect_timeout=10&application_name=myapp"
           case ConnectionString.parse input of
