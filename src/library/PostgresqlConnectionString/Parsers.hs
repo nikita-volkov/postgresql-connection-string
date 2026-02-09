@@ -37,6 +37,11 @@ getUriConnectionString = do
               -- We still don't know if this is user:password@ or host:port
               asum
                 [ do
+                    -- Empty password: user:@host
+                    try (char '@')
+                    let user = unqualifiedWord
+                    continueFromHostspec (Just user) (Just "") [],
+                  do
                     password <- try do
                       label "Password" getWord <* char '@'
                     -- Definitely user:password@ pattern
