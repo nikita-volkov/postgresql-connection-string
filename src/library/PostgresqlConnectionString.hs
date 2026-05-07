@@ -49,6 +49,7 @@ module PostgresqlConnectionString
     -- * Parsing
     parse,
     megaparsecOf,
+    Parsers.fromKeyValueParams,
 
     -- * Rendering
     toUrl,

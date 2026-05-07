@@ -76,8 +76,11 @@ getUriConnectionString = do
     ]
 
 getKeyValueConnectionString :: P ConnectionString
-getKeyValueConnectionString = do
-  params <- getKeyValueParams
+getKeyValueConnectionString =
+  fromKeyValueParams <$> getKeyValueParams
+
+fromKeyValueParams :: Map.Map Text Text -> ConnectionString
+fromKeyValueParams params =
   -- Extract known connection parameters
   let user = Map.lookup "user" params
       password = Map.lookup "password" params
@@ -104,7 +107,7 @@ getKeyValueConnectionString = do
               pairs = zipWith (\host mPort -> (host, mPort)) hostList (map Just portList ++ repeat Nothing)
            in map (\(host, mPortText) -> Host host (mPortText >>= parsePort)) pairs
 
-  pure (ConnectionString user password hosts dbname remainingParams)
+  in ConnectionString user password hosts dbname remainingParams
   where
     parsePort :: Text -> Maybe Word16
     parsePort t = case reads (Text.unpack t) of
